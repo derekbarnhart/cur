@@ -1,0 +1,42 @@
+#!/usr/bin/env coffee
+
+fs = require "fs"
+path = require "path"
+log = require "verbalize"
+argv = require("optimist").argv
+dirty = require "dirty"
+hb = require "handlebars"
+
+#Get Configurations
+cfg = JSON.parse fs.readFileSync(".currc").toString("UTF8")
+
+commandsPath = "../lib/commands"
+
+if argv._.length < 1
+    console.log "do help"
+else
+    command = argv._.shift()
+    #Check for built in commands
+    builtInCommands = (cmd.split(".")[0] for cmd in fs.readdirSync(commandsPath))
+
+    if command in builtInCommands
+        require("#{commandsPath}/#{command}.js")(argv, cfg)
+    else
+        #Check to see if this is a command we have cached
+        db = dirty cfg["database_path"]
+        db.on 'load', ()->
+            resp = db.get command
+            if resp?
+                custArgs = require('optimist').options(resp.options).argv
+                list = custArgs._[1..]
+                delete custArgs._
+                delete custArgs['$0']
+                hbTemp = hb.compile resp.cmd
+                compiledCommand = hbTemp(custArgs)
+                exec = require('child_process').exec
+                exec compiledCommand,(err, stdout, stderr)->
+                    console.log stdout
+
+
+
+

@@ -1,0 +1,2 @@
+{"key":"sayhi","val":{"cmd":"echo hi {{name}}","options":{"name":{"default":"Farrah"}}}}
+{"key":"byefarrah","val":{"cmd":"echo {{greeting}} {{person}}","options":{"greeting":{"default":"Bye"},"person":{"default":"Farrah"}}}}
